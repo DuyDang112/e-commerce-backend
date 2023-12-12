@@ -1,0 +1,16 @@
+﻿using Contract.Domain;
+using Infrastructures.Extentions;
+using MongoDB.Bson.Serialization.Attributes;
+
+namespace Inventory.Grpc.Entities
+{
+    [BsonCollection("InventotyEntries")]
+    public class InventoryEntry : MongoEntity
+    {
+        [BsonElement("itemNo")]
+        public string ItemNo { get; set; }
+
+        [BsonElement("quantity")]
+        public int Quantity { get; set; }
+    }
+}
