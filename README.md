@@ -1,6 +1,6 @@
 ## How to run the project
 
-Run command for build project
+Run command for build projectt
 ```Powershell
 dotnet build
 ```
