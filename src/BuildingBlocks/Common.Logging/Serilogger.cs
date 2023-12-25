@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Serilog;
+using Serilog.Sinks.Elasticsearch;
 
 namespace Common.Logging
 {
@@ -9,11 +11,22 @@ namespace Common.Logging
         {
             var applicationName = context.HostingEnvironment.ApplicationName?.ToLower().Replace(".", "-");
             var environmentName = context.HostingEnvironment.EnvironmentName ?? "Development";
+            var elasticUri = context.Configuration.GetValue<string>("ElasticConfiguration:Uri");
+            var Username = context.Configuration.GetValue<string>("ElasticConfiguration:Username");
+            var Password = context.Configuration.GetValue<string>("ElasticConfiguration:Password");
 
             configuration
                 .WriteTo.Debug()
                 .WriteTo.Console(outputTemplate:
                     "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}")
+                .WriteTo.Elasticsearch(new ElasticsearchSinkOptions( new Uri(elasticUri))
+                {
+                    IndexFormat = $"e-commerce-{applicationName}-{environmentName}-{DateTime.UtcNow:yyyy-MM}",
+                    AutoRegisterTemplate = true,
+                    NumberOfReplicas = 1,
+                    NumberOfShards = 2,
+                    ModifyConnectionSettings = x => x.BasicAuthentication(Username, Password)
+                })
                 .Enrich.FromLogContext()
                 .Enrich.WithMachineName()
                 .Enrich.WithProperty("Environment", environmentName)
