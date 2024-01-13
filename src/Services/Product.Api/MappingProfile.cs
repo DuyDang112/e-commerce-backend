@@ -11,6 +11,8 @@ namespace Product.Api
         {
             CreateMap<ProductCatalog, ProductDto>().ReverseMap()
                 .IgnoreAllNonExisting();
+            CreateMap<ProductCategory, CategoryDto>().ReverseMap()
+                .IgnoreAllNonExisting();
         }
     }
 }

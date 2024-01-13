@@ -1,4 +1,6 @@
-﻿namespace Product.Api.Extentions
+﻿using HealthChecks.UI.Client;
+
+namespace Product.Api.Extentions
 {
     // IApplicationBuilder đại diện cho pipeline, xử lý HTTP request, cấu hình route
     public static class ApplicationExtentions
@@ -13,6 +15,11 @@
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHealthChecks("/hc", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions()
+                {
+                    Predicate = _ => true,
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                });
                 endpoints.MapDefaultControllerRoute();
             });
         }

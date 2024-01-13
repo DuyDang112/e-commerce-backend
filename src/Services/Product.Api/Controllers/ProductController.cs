@@ -46,9 +46,7 @@ namespace Product.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProduct([FromBody] ProductDto productDto)
         {
-            var product = _mapper.Map<ProductCatalog>(productDto);
-            await _repository.CreateAsync(product);
-            await _repository.SaveChangesAsync();
+            var product = await _repository.CreateProduct(productDto);
             var result = _mapper.Map<ProductDto>(product);
             return Ok(result);
         }
@@ -57,14 +55,8 @@ namespace Product.Api.Controllers
         [HttpPut("{id:long}")]
         public async Task<IActionResult> UpdateProduct([Required] long id, [FromBody] ProductDto productDto)
         {
-            var product = await _repository.GetByIdAsync(id);
-            if (product == null)
-                return NotFound();
-
-            var updateProduct = _mapper.Map(productDto, product); //MapperExtention
-            await _repository.UpdateAsync(updateProduct);
-            await _repository.SaveChangesAsync();
-
+            var product = await _repository.UpdateProduct(id, productDto);
+            if (product == null) return NotFound();
             var result = _mapper.Map<ProductDto>(product);
             return Ok(result);
         }
@@ -77,7 +69,6 @@ namespace Product.Api.Controllers
                 return NotFound();
 
             await _repository.DeleteAsync(product);
-            await _repository.SaveChangesAsync();
 
             return NoContent();
         }

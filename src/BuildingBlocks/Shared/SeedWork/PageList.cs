@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Shared.SeedWork
 {
@@ -41,15 +42,15 @@ namespace Shared.SeedWork
             return new PageList<T>(item, count, pageIndex, pageSize);
         }
 
-        //public static async Task<PageList<T>> ToPageList(IQueryable<T> source,
-        //  int pageIndex, int pageSize)
-        //{
-        //    var count = await source.CountAsync();
-        //    var item = await source
-        //        .Skip((pageIndex - 1) * pageSize)
-        //        .Take(pageSize).ToListAsync();
+        public static async Task<PageList<T>> ToPageListWithDatabaseRelation(IQueryable<T> source,
+          int pageIndex, int pageSize)
+        {
+            var count = await source.CountAsync();
+            var item = await source
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize).ToListAsync();
 
-        //    return new PageList<T>(item, count, pageIndex, pageSize);
-        //}
+            return new PageList<T>(item, count, pageIndex, pageSize);
+        }
     }
 }

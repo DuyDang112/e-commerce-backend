@@ -13,6 +13,8 @@ using Customer.Api;
 using AutoMapper;
 using Customer.Api.Entities;
 using Customer.Api.Controller;
+using Customer.Api.Extensions;
+using HealthChecks.UI.Client;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -45,6 +47,7 @@ try
                 .AddScoped(typeof(ICustomerRepository), typeof(CustomerRepositotyAsync))
                 .AddScoped(typeof(ICustomerService), typeof(CustomerService));
     builder.Services.AddAutoMapper(cfg => cfg.AddProfile(new MappingProfile()));
+    builder.Services.ConfigureHealthChecks();
 
     var app = builder.Build();
 
@@ -60,7 +63,16 @@ try
     //  app.UseHttpsRedirection(); // production only
     app.UseAuthorization();
 
-    app.MapControllers();
+    app.UseEndpoints(endpoints =>
+    {
+        endpoints.MapHealthChecks("/hc", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions()
+        {
+            Predicate = _ => true,
+            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
+
+        endpoints.MapDefaultControllerRoute();
+    });
 
     app.SeedCustomerData();
 

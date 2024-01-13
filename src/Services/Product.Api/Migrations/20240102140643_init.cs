@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -10,30 +9,24 @@ namespace Product.Api.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterDatabase()
-                .Annotation("MySql:CharSet", "utf8mb4");
-
             migrationBuilder.CreateTable(
                 name: "products",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    No = table.Column<string>(type: "varchar(150)", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    No = table.Column<string>(type: "varchar(150)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(250)", nullable: false),
                     Summary = table.Column<string>(type: "nvarchar(250)", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Description = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(12,2)", nullable: false),
-                    CreatedDate = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false),
-                    LassModifiedDate = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: true)
+                    CreatedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    LassModifiedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_products", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_products_No",

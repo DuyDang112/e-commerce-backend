@@ -12,6 +12,8 @@ namespace Product.Api.Persistence
         }
 
         public DbSet<ProductCatalog> products { get; set; }
+        public DbSet<ProductCategory> categories { get; set; }
+        public DbSet<ProductCategoryProduct> productCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

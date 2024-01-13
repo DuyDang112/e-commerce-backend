@@ -88,16 +88,12 @@ namespace Basket.Api.Repositoties
             var model = new ReminderCheckoutOrderDto(cart.EmailAddress, "ReminderCheckout", 
                 emailTemplate,DateTimeOffset.UtcNow.AddSeconds(30));
 
-            var uri = $"{_backgroundJobHttp.ScheduledJobUrl}/send-email-reminder-checkout-order";
-            var response = await _backgroundJobHttp.Client.PostAsJson(uri, model);
-            if(response.EnsureSuccessStatusCode().IsSuccessStatusCode)
+            var jobId = await _backgroundJobHttp.SendEmailReminderCheckoutOrder(model);
+
+            if(!string.IsNullOrEmpty(jobId))
             {
-                var jobId = await response.ReadContentAs<string>();
-                if(!string.IsNullOrEmpty(jobId))
-                {
-                    cart.JobId = jobId;
-                    await _redisCacheService.SetStringAsync(cart.UserName, _serializeService.Serialize(cart));
-                }
+                cart.JobId = jobId;
+                await _redisCacheService.SetStringAsync(cart.UserName, _serializeService.Serialize(cart));
             }
         }
 
@@ -106,10 +102,9 @@ namespace Basket.Api.Repositoties
             var cart = await GetBasketByUserName(username);
             if (cart == null || string.IsNullOrEmpty(cart.JobId)) return;
 
-            var joId = cart.JobId;
-            var url = $"{_backgroundJobHttp.ScheduledJobUrl}/delete/jobId/{joId}";
-            _backgroundJobHttp.Client.DeleteAsync(url);
-            _logger.Information($"DeleteReminderCheckoutOrder:Delete JobId {joId}");
+            var jobId = cart.JobId;
+           _backgroundJobHttp.DeleteReminderCheckoutOrder(jobId);
+            _logger.Information($"DeleteReminderCheckoutOrder:Delete JobId {jobId}");
         }
     }
 }

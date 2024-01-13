@@ -3,11 +3,13 @@ using Basket.Api.Repositoties;
 using Basket.Api.Repositoties.Interface;
 using Basket.Api.Services;
 using Basket.Api.Services.Interfaces;
+using Common.Logging;
 using Contract.Common.Interfaces;
 using EvenBus.Messages.IntergrationEvent.Commands.OrderTranSaction;
 using EvenBus.Messages.IntergrationEvent.Commands.OrderTranSaction.Interfaces;
 using Infrastructures.Common;
 using Infrastructures.Extentions;
+using Infrastructures.Policies;
 using Inventory.Grpc.Protos;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -21,7 +23,8 @@ namespace Basket.Api.Extentions
         public static IServiceCollection ConfigureServices(this IServiceCollection services) => 
             services.AddScoped<IBasketRepository,BasketRepository>()
             .AddTransient<ISerializeService,SerializeService>()
-            .AddTransient<IEmailTemplateService,BasketEmaiTemplateService>();
+            .AddTransient<IEmailTemplateService,BasketEmaiTemplateService>()
+            .AddTransient<LoggingDelegatingHandler>();
 
 
         public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
@@ -73,7 +76,9 @@ namespace Basket.Api.Extentions
 
         public static IServiceCollection ConfigureHttpClientService(this IServiceCollection services)
         {
-            services.AddHttpClient<BackgroundJobHttpService>();
+            services.AddHttpClient<BackgroundJobHttpService>()
+                .AddHttpMessageHandler<LoggingDelegatingHandler>()
+                .UseImmediateHttpRetryPolicy();
             return services;
         }
 

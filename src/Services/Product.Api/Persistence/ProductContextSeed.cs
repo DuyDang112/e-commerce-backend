@@ -11,6 +11,7 @@ namespace Product.Api.Persistence;
             if (!context.products.Any())
             {
                 context.AddRange(getCatalogProduct());
+                context.AddRange(getCategory());
                 await context.SaveChangesAsync();
                 logger.Information("Seed Data for Product DB associated with context {DbcontextName}", nameof(ProductContext));
             }
@@ -38,5 +39,26 @@ namespace Product.Api.Persistence;
             },
         };
         }
-    }
+
+        private static IEnumerable<ProductCategory> getCategory()
+        {
+        return new List<ProductCategory>()
+            {
+                new ()
+                {
+                    No = Guid.NewGuid().ToString(),
+                    Name = "Iphone",
+                    Description = "Description",
+                    ParentCategoryId = 1,
+                },
+                new ()
+                {
+                    No = Guid.NewGuid().ToString(),
+                    Name = "Samsung",
+                    Description = "Description",
+                    ParentCategoryId = null
+                },
+            };
+        }
+}
 

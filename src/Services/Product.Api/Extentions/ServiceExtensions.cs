@@ -1,11 +1,12 @@
 ﻿using Contract.Common.Interfaces;
 using Infrastructures.Common;
+using Infrastructures.Extentions;
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Product.Api.Persistence;
 using Product.Api.Repositories;
 using Product.Api.Repositories.Interfaces;
+using Shared.Configurations;
 using System;
 
 namespace Product.Api.Extentions
@@ -22,19 +23,18 @@ namespace Product.Api.Extentions
             services.ConfigureProductDbContext(configuration);
             services.AddInfrastructureServices();
             services.AddAutoMapper(cfg => cfg.AddProfile(new MappingProfile()));
+            services.ConfigureHealthChecks();
 
             return services;
         }
         
         private static IServiceCollection ConfigureProductDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnectionString");
-            var builder = new MySqlConnectionStringBuilder(connectionString);
-                services.AddDbContext<ProductContext>(options => options.UseMySql(builder.ConnectionString, ServerVersion.AutoDetect(builder.ConnectionString), e =>
-                {
-                    e.MigrationsAssembly("Product.Api");
-                    e.SchemaBehavior(MySqlSchemaBehavior.Ignore);
-                }));
+            services.AddDbContext<ProductContext>(options =>
+            {
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnectionString"),
+                    builder => builder.MigrationsAssembly(typeof(ProductContext).Assembly.FullName)); // chọn migration cho project (OrderContext)
+            });
 
             return services;
         }
@@ -44,7 +44,17 @@ namespace Product.Api.Extentions
             return services.AddScoped(typeof(IRepositoryBaseAsync<,,>), typeof(RepositoryBaseAsync<,,>))
                 .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
                 .AddScoped(typeof(IProductRepositry), typeof(ProductRepositoty))
+                .AddScoped(typeof(ICategoryRepository), typeof(CategoryRepository))
                 ;
+        }
+
+        private static void ConfigureHealthChecks(this IServiceCollection services)
+        {
+            var databaseSettings = services.GetOptions<DatabaseSettings>(nameof(DatabaseSettings));
+            services.AddHealthChecks()
+                .AddSqlServer(databaseSettings.ConnectionString,
+                name: "Sql Health",
+                failureStatus: HealthStatus.Degraded);
         }
     }
 

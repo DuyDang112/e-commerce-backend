@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Polly;
 
 namespace Product.Api.Extentions
 {
@@ -18,9 +19,9 @@ namespace Product.Api.Extentions
 
                 try
                 {
-                    logger.LogInformation("Migrating mysql database");
+                    logger.LogInformation("Migrating sql database");
                     ExecuteMigrations(context);
-                    logger.LogInformation("Migrated mysql database");
+                    logger.LogInformation("Migrated sql database");
                     InvokeSeeder(seeder, context, services);
                 }
                 catch
@@ -40,7 +41,11 @@ namespace Product.Api.Extentions
 
         private static void ExecuteMigrations<TContext>(TContext context) where TContext : DbContext
         {
-            context.Database.Migrate();
+            //context.Database.Migrate(); mySql
+            if (context.Database.IsSqlServer())
+            {
+                context.Database.MigrateAsync();
+            }
         }
     }
 }
